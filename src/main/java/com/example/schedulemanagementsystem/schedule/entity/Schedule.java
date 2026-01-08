@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.jspecify.annotations.Nullable;
+import com.example.schedulemanagementsystem.user.entity.User;
 
 @Getter
 @Entity
@@ -17,13 +17,15 @@ public class Schedule extends BaseEntity{
     private String title;
     private String content;
 
-    //작성 유저명
-    private String writerName;
+    //user id Fk
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)  //optional은 JPA에서 null의 허용 여부
+    @JoinColumn(name = "user_id", nullable = false)  //nullable은 DB에서 null의 허용 여부
+    private User user;
 
-    public Schedule(String title, String content, String writerName) {
+    public Schedule(String title, String content, User user) {
         this.title = title;
         this.content = content;
-        this.writerName = writerName;
+        this.user = user;
     }
 
     public void update(String title, String content) {

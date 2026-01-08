@@ -3,6 +3,8 @@ package com.example.schedulemanagementsystem.schedule.service;
 import com.example.schedulemanagementsystem.schedule.dto.*;
 import com.example.schedulemanagementsystem.schedule.entity.Schedule;
 import com.example.schedulemanagementsystem.schedule.repository.ScheduleRepository;
+import com.example.schedulemanagementsystem.user.entity.User;
+import com.example.schedulemanagementsystem.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -15,17 +17,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
+    private final UserRepository userRepository;
 
     //일정 생성
     @Transactional
-    public CreateScheduleResponse save(CreateScheduleRequest request) {
-        Schedule schedule = new Schedule(request.getTitle(), request.getContent(), request.getWriterName());
+    public CreateScheduleResponse save(Long userId, CreateScheduleRequest request) {
+        //userId 가져오기
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new IllegalStateException("없는 일정입니다.")
+        );
+
+        //Schedule 생성
+        Schedule schedule = new Schedule(request.getTitle(), request.getContent(), user);
         Schedule savedSchedule = scheduleRepository.save(schedule);
         return new CreateScheduleResponse(
                 savedSchedule.getId(),
                 savedSchedule.getTitle(),
                 savedSchedule.getContent(),
-                savedSchedule.getWriterName(),
                 savedSchedule.getCreatedAt(),
                 savedSchedule.getModifiedAt()
         );
@@ -33,15 +41,19 @@ public class ScheduleService {
 
     //일정 전체 조회
     @Transactional(readOnly = true)
-    public List<GetScheduleResponse> findAll() {
-        List<Schedule> schedules = scheduleRepository.findAll();
+    public List<GetScheduleResponse> findAll(Long userId) {
+        //userId 가져오기
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new IllegalStateException("없는 일정입니다.")
+        );
+
+        List<Schedule> schedules = scheduleRepository.findByUser(user);
         List<GetScheduleResponse> dtos = new ArrayList<>();
         for (Schedule schedule : schedules) {
             dtos.add(new GetScheduleResponse(
                     schedule.getId(),
                     schedule.getTitle(),
                     schedule.getContent(),
-                    schedule.getWriterName(),
                     schedule.getCreatedAt(),
                     schedule.getModifiedAt())
             );
@@ -59,7 +71,6 @@ public class ScheduleService {
                 schedule.getId(),
                 schedule.getTitle(),
                 schedule.getContent(),
-                schedule.getWriterName(),
                 schedule.getCreatedAt(),
                 schedule.getModifiedAt()
         );
@@ -80,7 +91,6 @@ public class ScheduleService {
                 schedule.getId(),
                 schedule.getTitle(),
                 schedule.getContent(),
-                schedule.getWriterName(),
                 schedule.getCreatedAt(),
                 schedule.getModifiedAt()
         );
