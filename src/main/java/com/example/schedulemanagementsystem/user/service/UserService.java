@@ -100,7 +100,7 @@ public class UserService {
     public void delete(Long loginUserId, Long userId) {
         //아이디 비교해서 제한
         if (!loginUserId.equals(userId)) {
-            throw new IllegalStateException("본인만 수정할 수 있습니다.");
+            throw new IllegalStateException("본인만 삭제할 수 있습니다.");
         }
 
         boolean exists = userRepository.existsById(userId);

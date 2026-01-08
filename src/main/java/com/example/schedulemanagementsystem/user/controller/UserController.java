@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     //로그인 세션 키
-    public static final String SESSION_KEY = "loginUser";
+    private static final String SESSION_KEY = "loginUser";
 
     private final UserService userService;
 

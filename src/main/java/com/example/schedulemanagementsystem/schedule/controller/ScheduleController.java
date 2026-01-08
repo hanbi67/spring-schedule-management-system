@@ -2,6 +2,8 @@ package com.example.schedulemanagementsystem.schedule.controller;
 
 import com.example.schedulemanagementsystem.schedule.dto.*;
 import com.example.schedulemanagementsystem.schedule.service.ScheduleService;
+import com.example.schedulemanagementsystem.user.dto.SessionUser;
+import jakarta.servlet.http.HttpSession;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,16 +15,30 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class ScheduleController {
+    //로그인 세션 키
+    private static final String SESSION_KEY = "loginUser";
+
     private final ScheduleService scheduleService;
 
     //일정 생성 (로그인 + 본인 일정만 생성 가능)
     @PostMapping("/users/{userId}/schedules")
     public ResponseEntity<CreateScheduleResponse> createSchedule(
             @PathVariable Long userId,
-            @RequestBody CreateScheduleRequest request
+            @RequestBody CreateScheduleRequest request,
+            HttpSession session
     ){
-        return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.save(userId, request));
+        SessionUser loginUser = requireLogin(session);
+        return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.save(loginUser.getId(), userId, request));
     }
+
+//    //일정 생성
+//    @PostMapping("/users/{userId}/schedules")
+//    public ResponseEntity<CreateScheduleResponse> createSchedule(
+//            @PathVariable Long userId,
+//            @RequestBody CreateScheduleRequest request
+//    ){
+//        return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.save(userId, request));
+//    }
 
     //일정 전체 조회 (공개)
     @GetMapping("/users/{userId}/schedules")
@@ -43,19 +59,55 @@ public class ScheduleController {
     //일정 수정 (로그인 + 본인만 수정 가능)
     @PutMapping("/users/{userId}/schedules/{scheduleId}")
     public ResponseEntity<UpdateScheduleResponse> updateSchedule(
+            @PathVariable Long userId,
             @PathVariable Long scheduleId,
-            @RequestBody UpdateScheduleRequest request
+            @RequestBody UpdateScheduleRequest request,
+            HttpSession session
     ){
-        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.update(scheduleId, request));
+        SessionUser loginUser = requireLogin(session);
+        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.update(loginUser.getId(), userId, scheduleId, request));
     }
+
+//    //일정 수정
+//    @PutMapping("/users/{userId}/schedules/{scheduleId}")
+//    public ResponseEntity<UpdateScheduleResponse> updateSchedule(
+//            @PathVariable Long scheduleId,
+//            @RequestBody UpdateScheduleRequest request
+//    ){
+//        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.update(scheduleId, request));
+//    }
 
     //일정 삭제 (로그인 + 본인만 삭제 가능)
     @DeleteMapping("/users/{userId}/schedules/{scheduleId}")
     public ResponseEntity<Void> deleteSchedule(
-            @PathVariable Long scheduleId
+            @PathVariable Long userId,
+            @PathVariable Long scheduleId,
+            HttpSession session
     ){
-        scheduleService.delete(scheduleId);
+        SessionUser loginUser = requireLogin(session);
+        scheduleService.delete(loginUser.getId(), userId, scheduleId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+//    //일정 삭제
+//    @DeleteMapping("/users/{userId}/schedules/{scheduleId}")
+//    public ResponseEntity<Void> deleteSchedule(
+//            @PathVariable Long scheduleId
+//    ){
+//        scheduleService.delete(scheduleId);
+//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+//    }
+
+    //로그인 여부 확인
+    private SessionUser requireLogin(HttpSession session) {
+        Object value = session.getAttribute(SESSION_KEY);
+        if (value == null) {
+            throw new IllegalStateException("로그인이 필요합니다.");
+        }
+        if (!(value instanceof SessionUser sessionUser)) {
+            throw new IllegalStateException("세션 정보가 올바르지 않습니다.");
+        }
+        return sessionUser;
     }
 
 }
