@@ -4,7 +4,9 @@ import com.example.schedulemanagementsystem.user.dto.CreateUserRequest;
 import com.example.schedulemanagementsystem.user.dto.CreateUserResponse;
 import com.example.schedulemanagementsystem.user.dto.GetUserResponse;
 import com.example.schedulemanagementsystem.user.dto.UpdateUserResponse;
+import com.example.schedulemanagementsystem.user.entity.User;
 import com.example.schedulemanagementsystem.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +19,7 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
-    //유저 생성
+    //유저 생성(회원가입)
     @PostMapping("/users")
     public ResponseEntity<CreateUserResponse> createUser(
             @RequestBody CreateUserRequest request

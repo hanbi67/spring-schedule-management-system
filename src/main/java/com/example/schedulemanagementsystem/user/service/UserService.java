@@ -7,7 +7,6 @@ import com.example.schedulemanagementsystem.user.dto.UpdateUserResponse;
 import com.example.schedulemanagementsystem.user.entity.User;
 import com.example.schedulemanagementsystem.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +18,10 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
 
-    //유저 생성
+    //유저 생성(회원가입)
     @Transactional
     public CreateUserResponse save(CreateUserRequest request) {
-        User user = new User(request.getName(), request.getEmail());
+        User user = new User(request.getName(), request.getEmail(), request.getPassword());
         User savedUser = userRepository.save(user);
         return new CreateUserResponse(
                 savedUser.getId(),
