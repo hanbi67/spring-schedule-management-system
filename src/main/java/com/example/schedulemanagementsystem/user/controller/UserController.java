@@ -1,11 +1,8 @@
 package com.example.schedulemanagementsystem.user.controller;
 
-import com.example.schedulemanagementsystem.user.dto.CreateUserRequest;
-import com.example.schedulemanagementsystem.user.dto.CreateUserResponse;
-import com.example.schedulemanagementsystem.user.dto.GetUserResponse;
-import com.example.schedulemanagementsystem.user.dto.UpdateUserResponse;
-import com.example.schedulemanagementsystem.user.entity.User;
+import com.example.schedulemanagementsystem.user.dto.*;
 import com.example.schedulemanagementsystem.user.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,12 +17,36 @@ public class UserController {
     private final UserService userService;
 
     //유저 생성(회원가입)
-    @PostMapping("/users")
-    public ResponseEntity<CreateUserResponse> createUser(
-            @RequestBody CreateUserRequest request
+    @PostMapping("/signup")
+    public ResponseEntity<SignupResponse> signUp(
+            @Valid @RequestBody SignupRequest request
     ){
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(request));
     }
+
+//    //유저 생성(회원가입)
+//    @PostMapping("/users")
+//    public ResponseEntity<CreateUserResponse> createUser(
+//            @RequestBody CreateUserRequest request
+//    ){
+//        return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(request));
+//    }
+
+    //로그인
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpSession session
+    ){
+        SessionUser sessionUser = userService.login(request);
+        session.setAttribute("loginUser", sessionUser);
+
+        LoginResponse response = new LoginResponse(sessionUser.getId(), sessionUser.getEmail());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+
+        //return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
 
     //유저 전체 조회
     @GetMapping("/users")
@@ -42,10 +63,11 @@ public class UserController {
     }
 
     //유저 수정 - 유저명,이메일만 부분 수정 가능 -> Patch
+    //세션 활용
     @PatchMapping("/users/{userId}")
     public ResponseEntity<UpdateUserResponse> updateUser(
             @PathVariable Long userId,
-            @RequestBody CreateUserRequest request
+            @RequestBody SignupRequest request
     ){
         return ResponseEntity.status(HttpStatus.OK).body(userService.update(userId, request));
     }
@@ -58,4 +80,5 @@ public class UserController {
         userService.delete(userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
 }

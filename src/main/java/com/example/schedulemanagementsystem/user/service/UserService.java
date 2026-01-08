@@ -1,11 +1,9 @@
 package com.example.schedulemanagementsystem.user.service;
 
-import com.example.schedulemanagementsystem.user.dto.CreateUserRequest;
-import com.example.schedulemanagementsystem.user.dto.CreateUserResponse;
-import com.example.schedulemanagementsystem.user.dto.GetUserResponse;
-import com.example.schedulemanagementsystem.user.dto.UpdateUserResponse;
+import com.example.schedulemanagementsystem.user.dto.*;
 import com.example.schedulemanagementsystem.user.entity.User;
 import com.example.schedulemanagementsystem.user.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +18,16 @@ public class UserService {
 
     //유저 생성(회원가입)
     @Transactional
-    public CreateUserResponse save(CreateUserRequest request) {
+    public SignupResponse save(@Valid SignupRequest request) {
+        //이메일 중복체크
+        boolean exists = userRepository.existsByEmail(request.getEmail());
+        if (exists) {
+            throw new IllegalStateException("이미 가입된 이메일입니다.");
+        }
+
         User user = new User(request.getName(), request.getEmail(), request.getPassword());
         User savedUser = userRepository.save(user);
-        return new CreateUserResponse(
+        return new SignupResponse(
                 savedUser.getId(),
                 savedUser.getName(),
                 savedUser.getEmail(),
@@ -66,7 +70,7 @@ public class UserService {
 
     //유저 수정
     @Transactional
-    public UpdateUserResponse update(Long userId, CreateUserRequest request) {
+    public UpdateUserResponse update(Long userId, SignupRequest request) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new IllegalStateException("존재하지 않는 유저입니다.")
         );
@@ -92,5 +96,18 @@ public class UserService {
             throw new IllegalStateException("존재하지 않는 유저입니다.");
         }
         userRepository.deleteById(userId);
+    }
+
+    //로그인
+    @Transactional(readOnly = true)
+    public SessionUser login(@Valid LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
+                () -> new IllegalStateException("이메일 또는 비밀번호가 일치하지 않습니다.")
+        );
+        if (!user.getPassword().equals(request.getPassword())) {
+            throw new IllegalStateException("이메일 또는 비밀번호가 일치하지 않습니다.");
+        }
+
+        return new SessionUser(user.getId(), user.getName(), user.getEmail());
     }
 }
