@@ -82,7 +82,7 @@ public class ScheduleService {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
                 () -> new IllegalStateException("없는 일정입니다.")
         );
-        schedule.update(schedule.getTitle(), request.getContent());
+        schedule.update(request.getTitle(), request.getContent());
 
         //flush
         scheduleRepository.flush();
