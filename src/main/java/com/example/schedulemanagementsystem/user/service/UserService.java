@@ -68,9 +68,15 @@ public class UserService {
         );
     }
 
+    //로그인한 유저와 대상 유저가 같을 때만
     //유저 수정
     @Transactional
-    public UpdateUserResponse update(Long userId, SignupRequest request) {
+    public UpdateUserResponse update(Long loginUserId, Long userId, SignupRequest request) {
+        //아이디 비교해서 제한
+        if (!loginUserId.equals(userId)) {
+            throw new IllegalStateException("본인만 수정할 수 있습니다.");
+        }
+
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new IllegalStateException("존재하지 않는 유저입니다.")
         );
@@ -88,9 +94,15 @@ public class UserService {
         );
     }
 
+    //로그인한 유저와 대상 유저가 같을 때만
     //유저 삭제
     @Transactional
-    public void delete(Long userId) {
+    public void delete(Long loginUserId, Long userId) {
+        //아이디 비교해서 제한
+        if (!loginUserId.equals(userId)) {
+            throw new IllegalStateException("본인만 수정할 수 있습니다.");
+        }
+
         boolean exists = userRepository.existsById(userId);
         if (!exists) {
             throw new IllegalStateException("존재하지 않는 유저입니다.");

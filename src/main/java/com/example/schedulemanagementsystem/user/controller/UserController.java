@@ -14,6 +14,9 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class UserController {
+    //로그인 세션 키
+    public static final String SESSION_KEY = "loginUser";
+
     private final UserService userService;
 
     //유저 생성(회원가입)
@@ -63,22 +66,59 @@ public class UserController {
     }
 
     //유저 수정 - 유저명,이메일만 부분 수정 가능 -> Patch
-    //세션 활용
+    //세션 활용(로그인 상태 + 본인만 수정 가능)
     @PatchMapping("/users/{userId}")
     public ResponseEntity<UpdateUserResponse> updateUser(
             @PathVariable Long userId,
-            @RequestBody SignupRequest request
+            @RequestBody SignupRequest request,
+            HttpSession session
     ){
-        return ResponseEntity.status(HttpStatus.OK).body(userService.update(userId, request));
+        SessionUser loginUser = requireLogin(session);
+        return ResponseEntity.status(HttpStatus.OK).body(userService.update(loginUser.getId(), userId, request));
     }
 
+
+//    //유저 수정 - 유저명,이메일만 부분 수정 가능 -> Patch
+//    @PatchMapping("/users/{userId}")
+//    public ResponseEntity<UpdateUserResponse> updateUser(
+//            @PathVariable Long userId,
+//            @RequestBody SignupRequest request
+//    ){
+//        return ResponseEntity.status(HttpStatus.OK).body(userService.update(userId, request));
+//    }
+
     //유저 삭제
+    //세션 활용(로그인 상태 + 본인만 수정 가능)
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<Void> deleteUser(
-            @PathVariable Long userId
+            @PathVariable Long userId,
+            HttpSession session
     ){
-        userService.delete(userId);
+        SessionUser loginUser = requireLogin(session);
+        userService.delete(loginUser.getId(), userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+//    //유저 삭제
+//    @DeleteMapping("/users/{userId}")
+//    public ResponseEntity<Void> deleteUser(
+//            @PathVariable Long userId
+//    ){
+//        userService.delete(userId);
+//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+//    }
+
+    //로그인 여부 확인
+    private SessionUser requireLogin(HttpSession session) {
+        Object value = session.getAttribute(SESSION_KEY);
+        if (value == null){
+            throw new IllegalStateException("로그인이 필요합니다.");
+        }
+        //세션 정보가 올바르지 않을 경우
+        if (!(value instanceof SessionUser sessionUser)){
+            throw new IllegalStateException("세션 정보가 올바르지 않습니다.");
+        }
+        return sessionUser;
     }
 
 }
