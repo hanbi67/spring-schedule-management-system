@@ -71,7 +71,7 @@ public class UserService {
     //로그인한 유저와 대상 유저가 같을 때만
     //유저 수정
     @Transactional
-    public UpdateUserResponse update(Long loginUserId, Long userId, SignupRequest request) {
+    public UpdateUserResponse update(Long loginUserId, Long userId, UpdateUserRequest request) {
         //아이디 비교해서 제한
         if (!loginUserId.equals(userId)) {
             throw new IllegalStateException("본인만 수정할 수 있습니다.");

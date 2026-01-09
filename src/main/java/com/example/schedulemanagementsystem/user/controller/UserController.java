@@ -70,7 +70,7 @@ public class UserController {
     @PatchMapping("/users/{userId}")
     public ResponseEntity<UpdateUserResponse> updateUser(
             @PathVariable Long userId,
-            @RequestBody SignupRequest request,
+            @RequestBody UpdateUserRequest request,
             @SessionAttribute(name = SESSION_KEY, required = false) SessionUser loginUser
     ){
         requireLogin(loginUser);
