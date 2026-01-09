@@ -25,9 +25,9 @@ public class ScheduleController {
     public ResponseEntity<CreateScheduleResponse> createSchedule(
             @PathVariable Long userId,
             @RequestBody CreateScheduleRequest request,
-            HttpSession session
+            @SessionAttribute(name = SESSION_KEY, required = false) SessionUser loginUser
     ){
-        SessionUser loginUser = requireLogin(session);
+        requireLogin(loginUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.save(loginUser.getId(), userId, request));
     }
 
@@ -62,9 +62,9 @@ public class ScheduleController {
             @PathVariable Long userId,
             @PathVariable Long scheduleId,
             @RequestBody UpdateScheduleRequest request,
-            HttpSession session
+            @SessionAttribute(name = SESSION_KEY, required = false) SessionUser loginUser
     ){
-        SessionUser loginUser = requireLogin(session);
+        requireLogin(loginUser);
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.update(loginUser.getId(), userId, scheduleId, request));
     }
 
@@ -82,9 +82,9 @@ public class ScheduleController {
     public ResponseEntity<Void> deleteSchedule(
             @PathVariable Long userId,
             @PathVariable Long scheduleId,
-            HttpSession session
+            @SessionAttribute(name = SESSION_KEY, required = false) SessionUser loginUser
     ){
-        SessionUser loginUser = requireLogin(session);
+        requireLogin(loginUser);
         scheduleService.delete(loginUser.getId(), userId, scheduleId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -99,15 +99,10 @@ public class ScheduleController {
 //    }
 
     //로그인 여부 확인
-    private SessionUser requireLogin(HttpSession session) {
-        Object value = session.getAttribute(SESSION_KEY);
-        if (value == null) {
+    private void requireLogin(SessionUser loginUser) {
+        if (loginUser == null) {
             throw new IllegalStateException("로그인이 필요합니다.");
         }
-        if (!(value instanceof SessionUser sessionUser)) {
-            throw new IllegalStateException("세션 정보가 올바르지 않습니다.");
-        }
-        return sessionUser;
     }
 
 }

@@ -71,9 +71,9 @@ public class UserController {
     public ResponseEntity<UpdateUserResponse> updateUser(
             @PathVariable Long userId,
             @RequestBody SignupRequest request,
-            HttpSession session
+            @SessionAttribute(name = SESSION_KEY, required = false) SessionUser loginUser
     ){
-        SessionUser loginUser = requireLogin(session);
+        requireLogin(loginUser);
         return ResponseEntity.status(HttpStatus.OK).body(userService.update(loginUser.getId(), userId, request));
     }
 
@@ -92,9 +92,9 @@ public class UserController {
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<Void> deleteUser(
             @PathVariable Long userId,
-            HttpSession session
+            @SessionAttribute(name = SESSION_KEY, required = false) SessionUser loginUser
     ){
-        SessionUser loginUser = requireLogin(session);
+        requireLogin(loginUser);
         userService.delete(loginUser.getId(), userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -109,16 +109,10 @@ public class UserController {
 //    }
 
     //로그인 여부 확인
-    private SessionUser requireLogin(HttpSession session) {
-        Object value = session.getAttribute(SESSION_KEY);
-        if (value == null){
+    private void requireLogin(SessionUser loginUser) {
+        if (loginUser == null) {
             throw new IllegalStateException("로그인이 필요합니다.");
         }
-        //세션 정보가 올바르지 않을 경우
-        if (!(value instanceof SessionUser sessionUser)){
-            throw new IllegalStateException("세션 정보가 올바르지 않습니다.");
-        }
-        return sessionUser;
     }
 
 }
