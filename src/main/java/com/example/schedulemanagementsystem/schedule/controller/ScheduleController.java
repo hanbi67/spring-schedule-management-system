@@ -1,9 +1,11 @@
 package com.example.schedulemanagementsystem.schedule.controller;
 
+import com.example.schedulemanagementsystem.common.exception.UnauthorizedException;
 import com.example.schedulemanagementsystem.schedule.dto.*;
 import com.example.schedulemanagementsystem.schedule.service.ScheduleService;
 import com.example.schedulemanagementsystem.user.dto.SessionUser;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,21 +26,12 @@ public class ScheduleController {
     @PostMapping("/users/{userId}/schedules")
     public ResponseEntity<CreateScheduleResponse> createSchedule(
             @PathVariable Long userId,
-            @RequestBody CreateScheduleRequest request,
+            @Valid @RequestBody CreateScheduleRequest request,
             @SessionAttribute(name = SESSION_KEY, required = false) SessionUser loginUser
     ){
         requireLogin(loginUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.save(loginUser.getId(), userId, request));
     }
-
-//    //일정 생성
-//    @PostMapping("/users/{userId}/schedules")
-//    public ResponseEntity<CreateScheduleResponse> createSchedule(
-//            @PathVariable Long userId,
-//            @RequestBody CreateScheduleRequest request
-//    ){
-//        return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.save(userId, request));
-//    }
 
     //일정 전체 조회 (공개)
     @GetMapping("/users/{userId}/schedules")
@@ -61,21 +54,12 @@ public class ScheduleController {
     public ResponseEntity<UpdateScheduleResponse> updateSchedule(
             @PathVariable Long userId,
             @PathVariable Long scheduleId,
-            @RequestBody UpdateScheduleRequest request,
+            @Valid @RequestBody UpdateScheduleRequest request,
             @SessionAttribute(name = SESSION_KEY, required = false) SessionUser loginUser
     ){
         requireLogin(loginUser);
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.update(loginUser.getId(), userId, scheduleId, request));
     }
-
-//    //일정 수정
-//    @PutMapping("/users/{userId}/schedules/{scheduleId}")
-//    public ResponseEntity<UpdateScheduleResponse> updateSchedule(
-//            @PathVariable Long scheduleId,
-//            @RequestBody UpdateScheduleRequest request
-//    ){
-//        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.update(scheduleId, request));
-//    }
 
     //일정 삭제 (로그인 + 본인만 삭제 가능)
     @DeleteMapping("/users/{userId}/schedules/{scheduleId}")
@@ -89,19 +73,11 @@ public class ScheduleController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-//    //일정 삭제
-//    @DeleteMapping("/users/{userId}/schedules/{scheduleId}")
-//    public ResponseEntity<Void> deleteSchedule(
-//            @PathVariable Long scheduleId
-//    ){
-//        scheduleService.delete(scheduleId);
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-//    }
 
     //로그인 여부 확인
     private void requireLogin(SessionUser loginUser) {
         if (loginUser == null) {
-            throw new IllegalStateException("로그인이 필요합니다.");
+            throw new UnauthorizedException("로그인이 필요합니다.");
         }
     }
 

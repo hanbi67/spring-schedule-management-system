@@ -1,5 +1,8 @@
 package com.example.schedulemanagementsystem.user.service;
 
+import com.example.schedulemanagementsystem.common.exception.ConflictException;
+import com.example.schedulemanagementsystem.common.exception.ForbiddenException;
+import com.example.schedulemanagementsystem.common.exception.NotFoundException;
 import com.example.schedulemanagementsystem.user.dto.*;
 import com.example.schedulemanagementsystem.user.entity.User;
 import com.example.schedulemanagementsystem.user.repository.UserRepository;
@@ -22,7 +25,7 @@ public class UserService {
         //이메일 중복체크
         boolean exists = userRepository.existsByEmail(request.getEmail());
         if (exists) {
-            throw new IllegalStateException("이미 가입된 이메일입니다.");
+            throw new ConflictException("이미 가입된 이메일입니다.");
         }
 
         User user = new User(request.getName(), request.getEmail(), request.getPassword());
@@ -57,7 +60,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public GetUserResponse findOne(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new IllegalStateException("존재하지 않는 유저입니다.")
+                () -> new NotFoundException("존재하지 않는 유저입니다.")
         );
         return new GetUserResponse(
                 user.getId(),
@@ -71,14 +74,14 @@ public class UserService {
     //로그인한 유저와 대상 유저가 같을 때만
     //유저 수정
     @Transactional
-    public UpdateUserResponse update(Long loginUserId, Long userId, UpdateUserRequest request) {
+    public UpdateUserResponse update(Long loginUserId, Long userId, @Valid UpdateUserRequest request) {
         //아이디 비교해서 제한
         if (!loginUserId.equals(userId)) {
-            throw new IllegalStateException("본인만 수정할 수 있습니다.");
+            throw new ForbiddenException("본인만 수정할 수 있습니다.");
         }
 
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new IllegalStateException("존재하지 않는 유저입니다.")
+                () -> new NotFoundException("존재하지 않는 유저입니다.")
         );
         user.update(request.getName(), request.getEmail());
 
@@ -100,12 +103,12 @@ public class UserService {
     public void delete(Long loginUserId, Long userId) {
         //아이디 비교해서 제한
         if (!loginUserId.equals(userId)) {
-            throw new IllegalStateException("본인만 삭제할 수 있습니다.");
+            throw new ForbiddenException("본인만 삭제할 수 있습니다.");
         }
 
         boolean exists = userRepository.existsById(userId);
         if (!exists) {
-            throw new IllegalStateException("존재하지 않는 유저입니다.");
+            throw new NotFoundException("존재하지 않는 유저입니다.");
         }
         userRepository.deleteById(userId);
     }
@@ -114,10 +117,10 @@ public class UserService {
     @Transactional(readOnly = true)
     public SessionUser login(@Valid LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
-                () -> new IllegalStateException("이메일 또는 비밀번호가 일치하지 않습니다.")
+                () -> new NotFoundException("이메일 또는 비밀번호가 일치하지 않습니다.")
         );
         if (!user.getPassword().equals(request.getPassword())) {
-            throw new IllegalStateException("이메일 또는 비밀번호가 일치하지 않습니다.");
+            throw new ForbiddenException("이메일 또는 비밀번호가 일치하지 않습니다.");
         }
 
         return new SessionUser(user.getId(), user.getName(), user.getEmail());

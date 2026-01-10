@@ -1,5 +1,6 @@
 package com.example.schedulemanagementsystem.user.controller;
 
+import com.example.schedulemanagementsystem.common.exception.UnauthorizedException;
 import com.example.schedulemanagementsystem.user.dto.*;
 import com.example.schedulemanagementsystem.user.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -27,14 +28,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(request));
     }
 
-//    //유저 생성(회원가입)
-//    @PostMapping("/users")
-//    public ResponseEntity<CreateUserResponse> createUser(
-//            @RequestBody CreateUserRequest request
-//    ){
-//        return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(request));
-//    }
-
     //로그인
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
@@ -47,7 +40,6 @@ public class UserController {
         LoginResponse response = new LoginResponse(sessionUser.getId(), sessionUser.getEmail());
         return ResponseEntity.status(HttpStatus.OK).body(response);
 
-        //return ResponseEntity.status(HttpStatus.OK).build();
     }
 
 
@@ -70,22 +62,12 @@ public class UserController {
     @PatchMapping("/users/{userId}")
     public ResponseEntity<UpdateUserResponse> updateUser(
             @PathVariable Long userId,
-            @RequestBody UpdateUserRequest request,
+            @Valid @RequestBody UpdateUserRequest request,
             @SessionAttribute(name = SESSION_KEY, required = false) SessionUser loginUser
     ){
         requireLogin(loginUser);
         return ResponseEntity.status(HttpStatus.OK).body(userService.update(loginUser.getId(), userId, request));
     }
-
-
-//    //유저 수정 - 유저명,이메일만 부분 수정 가능 -> Patch
-//    @PatchMapping("/users/{userId}")
-//    public ResponseEntity<UpdateUserResponse> updateUser(
-//            @PathVariable Long userId,
-//            @RequestBody SignupRequest request
-//    ){
-//        return ResponseEntity.status(HttpStatus.OK).body(userService.update(userId, request));
-//    }
 
     //유저 삭제
     //세션 활용(로그인 상태 + 본인만 수정 가능)
@@ -99,19 +81,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-//    //유저 삭제
-//    @DeleteMapping("/users/{userId}")
-//    public ResponseEntity<Void> deleteUser(
-//            @PathVariable Long userId
-//    ){
-//        userService.delete(userId);
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-//    }
 
     //로그인 여부 확인
     private void requireLogin(SessionUser loginUser) {
         if (loginUser == null) {
-            throw new IllegalStateException("로그인이 필요합니다.");
+            throw new UnauthorizedException("로그인이 필요합니다.");
         }
     }
 

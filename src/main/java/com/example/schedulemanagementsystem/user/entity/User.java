@@ -13,9 +13,13 @@ public class User extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String name;
+    @Column(nullable = false, unique = true)
     private String email;
     //Lv3 비밀번호 필드 추가
+    @Column(nullable = false)
     private String password;
 
     public User(String name, String email, String password) {
