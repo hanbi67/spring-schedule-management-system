@@ -3,6 +3,7 @@ package com.example.schedulemanagementsystem.user.service;
 import com.example.schedulemanagementsystem.common.exception.ConflictException;
 import com.example.schedulemanagementsystem.common.exception.ForbiddenException;
 import com.example.schedulemanagementsystem.common.exception.NotFoundException;
+import com.example.schedulemanagementsystem.config.PasswordEncoder;
 import com.example.schedulemanagementsystem.user.dto.*;
 import com.example.schedulemanagementsystem.user.entity.User;
 import com.example.schedulemanagementsystem.user.repository.UserRepository;
@@ -18,7 +19,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
+    //회원가입시 encode 생성
     //유저 생성(회원가입)
     @Transactional
     public SignupResponse save(@Valid SignupRequest request) {
@@ -28,7 +31,10 @@ public class UserService {
             throw new ConflictException("이미 가입된 이메일입니다.");
         }
 
-        User user = new User(request.getName(), request.getEmail(), request.getPassword());
+        //회원가입시 비밀번호 encode 생성
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+
+        User user = new User(request.getName(), request.getEmail(), encodedPassword);
         User savedUser = userRepository.save(user);
         return new SignupResponse(
                 savedUser.getId(),
@@ -119,9 +125,14 @@ public class UserService {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
                 () -> new NotFoundException("이메일 또는 비밀번호가 일치하지 않습니다.")
         );
-        if (!user.getPassword().equals(request.getPassword())) {
+
+        //비밀번호 확인시 matches 적용
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new ForbiddenException("이메일 또는 비밀번호가 일치하지 않습니다.");
         }
+//        if (!user.getPassword().equals(request.getPassword())) {
+//            throw new ForbiddenException("이메일 또는 비밀번호가 일치하지 않습니다.");
+//        }
 
         return new SessionUser(user.getId(), user.getName(), user.getEmail());
     }
