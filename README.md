@@ -16,21 +16,28 @@
 
 ---
 
+## 1. 프로젝트 개요
+
+
+---
+
 ## 9. CRUD API 구현
 
-| 구분        | 기능                | Method | URL                                      |  성공 | 실패                        |
-|-----------|-------------------|--------|------------------------------------------|----:|---------------------------|
-| Auth      | 회원가입              | POST   | `/signup`                                | 201 | 400, 409, 500             |
-| Auth      | 로그인               | POST   | `/login`                                 | 200 | 400, 403, 404, 500        |
-| User      | 유저 전체 조회(공개)      | GET    | `/users`                                 | 200 | 500                       |
-| User      | 유저 단건 조회(공개)      | GET    | `/users/{userId}`                        | 200 | 404, 500                  |
-| User      | 유저 수정(로그인+본인)     | PATCH  | `/users/{userId}`                        | 200 | 400, 401, 403, 404, 500   |
-| User      | 유저 삭제(로그인+본인)     | DELETE | `/users/{userId}`                        | 204 | 401, 403, 404, 500        |
-| Schedule  | 유저별 일정 생성(로그인+본인) | POST   | `/users/{userId}/schedules`              | 201 | 400, 401, 403, 404, 500   |
-| Schedule  | 유저별 일정 전체 조회(공개)  | GET    | `/users/{userId}/schedules`              | 200 | 404, 500                  |
-| Schedule  | 일정 단건 조회(공개)      | GET    | `/users/{userId}/schedules/{scheduleId}` | 200 | 404, 500                  |
-| Schedule  | 일정 수정(로그인+본인)     | PUT | `/users/{userId}/schedules/{scheduleId}` | 200 | 400, 401, 403, 404, 500   |
-| Schedule  | 일정 삭제(로그인+본인)     | DELETE | `/users/{userId}/schedules/{scheduleId}` | 204 | 401, 403, 404, 500        |
+| 구분        | 기능                | Method | URL                                      |  성공 | 실패                     |
+|-----------|-------------------|--------|------------------------------------------|----:|------------------------|
+| Auth      | 회원가입              | POST   | `/signup`                                | 201 | 400, 409, 500          |
+| Auth      | 로그인               | POST   | `/login`                                 | 200 | 400, 403, 404, 500     |
+| User      | 유저 전체 조회(공개)      | GET    | `/users`                                 | 200 | 500                    |
+| User      | 유저 단건 조회(공개)      | GET    | `/users/{userId}`                        | 200 | 404, 500               |
+| User      | 유저 수정(로그인+본인)     | PATCH  | `/users/{userId}`                        | 200 | 400, 401, 403, 404, 500 |
+| User      | 유저 삭제(로그인+본인)     | DELETE | `/users/{userId}`                        | 204 | 401, 403, 404, 500     |
+| Schedule  | 유저별 일정 생성(로그인+본인) | POST   | `/users/{userId}/schedules`              | 201 | 400, 401, 403, 404, 500 |
+| Schedule  | 유저별 일정 전체 조회(공개)  | GET    | `/users/{userId}/schedules`              | 200 | 404, 500               |
+| Schedule  | 일정 단건 조회(공개)      | GET    | `/users/{userId}/schedules/{scheduleId}` | 200 | 404, 500               |
+| Schedule  | 일정 수정(로그인+본인)     | PUT    | `/users/{userId}/schedules/{scheduleId}` | 200 | 400, 401, 403, 404, 500 |
+| Schedule  | 일정 삭제(로그인+본인)     | DELETE | `/users/{userId}/schedules/{scheduleId}` | 204 | 401, 403, 404, 500     |
+| Comment  |  댓글 생성(로그인 필요)  | POST   |  `/schedules/{scheduleId}/comments`   | 201 | 400, 401, 404, 500     |
+| Comment  |  댓글 전체 조회(공개)  | GET   | `/schedules/{scheduleId}/comments`   | 200 | 500    |
 
 
 
@@ -438,6 +445,96 @@
 - `403 Forbidden` : 본인 일정만 삭제 가능
 - `404 Not Found` : 일정 없음
 - `500 Internal Server Error` : 서버 오류
+
+</div>
+</details>
+
+---
+
+### 댓글(Comment) API 명세서
+<details>
+<summary>댓글(Comment) API 명세서</summary>
+<div markdown="1">
+
+## 1) 댓글 생성 (로그인 필요)
+### Request
+- Method: `POST`
+- URL: `/schedules/{scheduleId}/comments`
+- Auth: 세션 로그인 필요
+- Body
+    ```
+    {
+       "content": "댓글 내용입니다."
+    }
+    ```
+### Validation
+- `content`: 필수
+
+### Response
+#### ✅ Success
+- Status: `201 Created`
+- Body
+    ```
+    {
+       "id": 1,
+       "content": "댓글 내용입니다.",
+       "createdAt": "2026-01-10T12:00:00",
+       "modifiedAt": "2026-01-10T12:00:00"
+    }
+    ```
+
+#### ❌ Fail
+- `400 Bad Request` : DTO 검증 실패
+- `401 Unauthorized` : 로그인 필요
+- `404 Not Found` : scheduleId에 해당하는 일정이 없음 / 로그인 유저가 존재하지 않음
+- `500 Internal Server Error` : 서버 오류
+
+---
+
+## 2) 댓글 전체 조회 (공개)
+### Request
+- Method: `GET`
+- URL: `/schedules/{scheduleId}/comments`
+
+### Response
+#### ✅ Success
+- Status: `200 OK`
+- Body
+    ```
+    [
+      {
+        "id": 3,
+        "content": "가장 최근 댓글",
+        "createdAt": "2026-01-10T12:00:00",
+        "modifiedAt": "2026-01-10T12:00:00"
+      },
+      {
+        "id": 1,
+        "content": "이전 댓글",
+        "createdAt": "2026-01-10T12:00:00",
+        "modifiedAt": "2026-01-10T12:00:00"
+      }
+    ]
+    ```
+- 정렬: createdAt 기준 내림차순
+(CommentRepository.findByScheduleIdOrderByCreatedAtDesc)
+
+#### ❌ Fail
+- `500 Internal Server Error` : 서버 오류
+
+<br/>
+
+</div>
+</details>
+
+
+---
+
+## 11. Postman 실행 결과
+<details>
+<summary>Postman 실행 결과</summary>
+<div markdown="1">
+
 
 </div>
 </details>
