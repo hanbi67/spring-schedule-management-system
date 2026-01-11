@@ -10,6 +10,9 @@ import com.example.schedulemanagementsystem.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -136,4 +139,13 @@ public class ScheduleService {
 
         scheduleRepository.delete(schedule);
     }
+
+    //일정 페이징 조회(수정일 기준 내림차순, default size=10)
+    @Transactional(readOnly = true)
+    public Page<SchedulePageResponse> findPage(int page, int size){
+        int finalSize = (size <= 0) ? 10 : size;
+        PageRequest pageable = PageRequest.of(page, finalSize, Sort.by(Sort.Direction.DESC, "modifiedAt"));
+        return scheduleRepository.findSchedulePage(pageable);
+    }
+
 }

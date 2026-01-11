@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -71,6 +72,15 @@ public class ScheduleController {
         requireLogin(loginUser);
         scheduleService.delete(loginUser.getId(), userId, scheduleId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    // 일정 페이징 조회 (공개)
+    @GetMapping("/schedules")
+    public ResponseEntity<Page<SchedulePageResponse>> getSchedulesPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.findPage(page, size));
     }
 
 
