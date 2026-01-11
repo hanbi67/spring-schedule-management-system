@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 public class CreateScheduleRequest {
-    @NotBlank
+    @NotBlank(message = "일정 제목(title)은 필수입니다.")
     @Size(max = 10, message = "일정 제목은 10글자까지 입니다.")
     private String title;
 
