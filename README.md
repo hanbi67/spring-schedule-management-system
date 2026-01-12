@@ -17,6 +17,255 @@
 ---
 
 ## 1. 프로젝트 개요
+Spring Boot 기반의 **일정 관리 API**를 구현한 프로젝트입니다.
+
+- **User(유저) / Auth(인증)**: 회원가입, 로그인(세션 기반), 유저 CRUD(수정/삭제는 로그인+본인만)
+- **Schedule(일정)**: 유저별 일정 CRUD(생성/수정/삭제는 로그인+본인만), 조회는 공개
+- **Comment(댓글)**: 일정에 댓글 작성/조회
+    - 댓글 작성: **로그인 필요** (본인 일정이 아니어도 작성 가능)
+    - 댓글 조회: **공개**
+- **Validation + 예외 처리**: 요청 DTO 검증 및 커스텀 예외를 `@RestControllerAdvice`로 공통 처리
+- **비밀번호 암호화**: BCrypt 기반 `PasswordEncoder`를 직접 구현하여 회원가입/로그인에 적용
+- **페이지네이션**: Spring Data JPA의 `Pageable`, `Page`를 활용한 일정 페이징 조회 기능 구현
+
+---
+
+## 2. 기술 스택
+- **Language**: Java 17
+- **Framework**: Spring Boot (Spring MVC)
+- **Data**: Spring Data JPA (Hibernate)
+- **Validation**: Jakarta Validation (`@Valid`, `@NotBlank`, `@Size`, `@Email`)
+- **DB**: MySQL
+- **Build Tool**: Gradle
+- **Boilerplate**: Lombok
+- **Password Hashing**: `at.favre.lib:bcrypt` (BCrypt)
+- **Auth**: Cookie/Session (`HttpSession`, `@SessionAttribute`)
+- **Error Handling**: `@RestControllerAdvice` + 커스텀 예외 + 공통 에러 응답(`ErrorResponse`)
+- **Test/Client**: Postman
+
+
+---
+
+## 3. 수행한 단계
+
+`필수 기능`
+- [Lv 0] : API 명세 및 ERD 작성
+- [Lv 1] : 일정 CRUD
+- [Lv 2] : 유저 CRUD
+- [Lv 3] : 회원가입
+- [Lv 4] : 로그인(인증)
+
+`도전 기능`
+- [Lv 5] : 다양한 예외처리
+- [Lv 6] : 비밀번호 암호화
+- [Lv 7] : 댓글 CRUD
+- [Lv 8] : 일정 페이징 조회
+
+---
+
+## 4. 기능 목록
+
+### Auth / User
+- 회원가입 (이메일 중복 체크, 비밀번호 암호화 저장)
+- 로그인 (세션 생성, 쿠키 기반 인증)
+- 유저 전체 조회 (공개)
+- 유저 단건 조회 (공개)
+- 유저 수정 (로그인 + 본인만)
+- 유저 삭제 (로그인 + 본인만)
+
+### Schedule
+- 유저별 일정 생성 (로그인 + 본인만)
+- 유저별 일정 전체 조회 (공개)
+- 일정 단건 조회 (공개)
+- 일정 수정 (로그인 + 본인만)
+- 일정 삭제 (로그인 + 본인만)
+- 일정 페이징 조회 (Pageable/Page, 수정일 기준 내림차순)
+
+### Comment
+- 댓글 생성 (로그인 필요, **본인 일정이 아니어도 가능**)
+- 댓글 전체 조회 (공개, 생성일 기준 내림차순)
+
+---
+
+## 5. 프로젝트 규칙
+
+- **세션 인증**
+    - 로그인 성공 시 세션에 로그인 사용자 정보를 저장하고, 이후 요청은 쿠키(`JSESSIONID`)로 인증합니다.
+- **권한 정책**
+    - 유저 수정/삭제: 로그인 + 본인만
+    - 일정 생성/수정/삭제: 로그인 + 본인만
+    - 댓글 생성: 로그인 필요(일정 소유자 여부와 무관)
+    - 조회 API: 기본적으로 공개(필요 시 로그인만으로 변경 가능)
+- **Validation**
+    - DTO 필수값/형식/길이 제한은 Jakarta Validation으로 처리합니다.
+- **예외 처리**
+    - 커스텀 예외(401/403/404/409) + Validation(400) + 예기치 못한 오류(500)를 전역 예외 처리로 응답합니다.
+- **비밀번호**
+    - 회원가입 시 BCrypt로 해시하여 저장하고, 로그인 시 `matches()`로 검증합니다.
+- **Auditing**
+    - `createdAt`은 생성 시각, `modifiedAt`은 수정 시각으로 관리합니다.
+
+---
+
+## 6. 📂 클래스 구조
+
+```
+ScheduleManagementSystem
+ ├─ README.md 
+ ├─ images
+ │    ├─ erd  
+ │    └─ postman 
+ └─ src
+  └─ main
+      ├─ resources
+      │   └─ application.properties
+      └─ java
+          └─ com.example.schedulemanagementsystem
+              │
+              ├─ ScheduleManagementSystemApplication
+              │    
+              ├─ common
+              │    ├─ error 
+              │    │   ├─ ErrorResponse
+              │    │   └─ GlobalExceptionHandler
+              │    └─ exception 
+              │        ├─ ConflictException
+              │        ├─ ForbiddenException 
+              │        ├─ NotFoundException
+              │        └─ UnauthorizedException
+              │ 
+              ├─ config
+              │    └─ PasswordEncoder
+              │
+              ├─ user
+              │    ├─ controller 
+              │    │   └─ UserController
+              │    ├─ dto
+              │    │   ├─ GetUserResponse
+              │    │   ├─ LoginRequest
+              │    │   ├─ LoginResponse
+              │    │   ├─ SessionUser
+              │    │   ├─ SignupRequest 
+              │    │   ├─ SignupResponse
+              │    │   ├─ UpdateUserRequest
+              │    │   └─ UpdateUserResponse
+              │    ├─ entity
+              │    │   ├─ BaseEntity
+              │    │   └─ User
+              │    ├─ controller 
+              │    │   └─ UserRepository
+              │    └─ service 
+              │        └─ UserService
+              │
+              ├─ schedule
+              │    ├─ controller 
+              │    │   └─ ScheduleController
+              │    ├─ dto
+              │    │   ├─ CreateScheduleRequest
+              │    │   ├─ CreateScheduleResponse
+              │    │   ├─ GetScheduleResponse
+              │    │   ├─ UpdateScheduleRequset
+              │    │   ├─ UpdateScheduleResponse 
+              │    │   └─ SchedulePageResponse
+              │    ├─ entity
+              │    │   ├─ BaseEntity
+              │    │   └─ Schedule
+              │    ├─ controller 
+              │    │   └─ ScheduleRepository
+              │    └─ service 
+              │        └─ ScheduleService
+              │
+              └─ comment
+                   ├─ controller 
+                   │   └─ CommentController
+                   ├─ dto
+                   │   ├─ CreateCommentRequest
+                   │   ├─ CreateCommentResponse
+                   │   └─ GetCommentResponse
+                   ├─ entity
+                   │   ├─ BaseEntity
+                   │   └─ Comment
+                   ├─ controller 
+                   │   └─ CommentRepository
+                   └─ service 
+                       └─ CommentService
+```
+
+---
+
+## 7. 실행 방법(Run)
+
+### 7.1 사전 준비
+- MySQL 실행
+- DB 생성 : `sql CREATE DATABASE ScheduleManagement;`
+
+### 7.2 application.properties 설정
+`src/main/resources/application.properties`에 DB 접속 정보 설정
+<details>
+<summary>코드 붙여넣기</summary>
+<div markdown="1">
+
+
+    spring.datasource.url=jdbc:mysql://localhost:3307/ScheduleManagement
+    spring.datasource.username=root
+    spring.datasource.password=12345678
+    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+    spring.jpa.hibernate.ddl-auto=create
+    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+    spring.jpa.show-sql=true
+    spring.jpa.properties.hibernate.format_sql=true
+
+- 포트번호를 3307로 설정한 이유
+    - 개발 당시, 로컬에서 3306은 먼저 사용되고 있다고 충돌이 뜨기 때문에 변경해 사용했음.
+
+</div>
+</details>
+
+> 참고
+> - `ddl-auto=create`는 실행할 때마다 테이블이 다시 생성됩니다.
+> - 데이터를 유지하려면 `update`로 변경해서 사용합니다.
+
+### 7.3 build.gradle 설정
+`implementation 'at.favre.lib:bcrypt:0.10.2'` 의존성 추가
+
+---
+
+## 8. 3 Layer Architecture 기반 주요 클래스·역할 설명
+
+### Controller Layer (요청/응답, 라우팅)
+- `UserController`
+    - 회원가입(`/signup`), 로그인(`/login`), 유저 조회/수정/삭제 API 제공
+    - 로그인 필요한 API는 `@SessionAttribute`로 세션 유저를 받아 검증
+
+- `ScheduleController`
+    - 일정 CRUD 및 일정 페이징 조회 API 제공
+    - 생성/수정/삭제는 로그인 + 본인만 가능하도록 제어
+
+- `CommentController`
+    - 댓글 생성(로그인 필요), 댓글 목록 조회(공개) API 제공
+    - 댓글 작성자는 URL 파라미터가 아니라 **세션 로그인 유저**로 결정
+
+- `GlobalExceptionHandler` (`@RestControllerAdvice`)
+    - Validation 실패(`400`) 및 커스텀 예외(`401/403/404/409`)를 공통 포맷으로 변환하여 응답
+
+### Service Layer (비즈니스 로직)
+- `UserService`
+    - 회원가입 시 이메일 중복 체크 및 비밀번호 해시 저장
+    - 로그인 시 비밀번호 `matches()` 검증
+    - 유저 수정/삭제 시 “본인 여부” 검증
+
+- `ScheduleService`
+    - 일정 CRUD 비즈니스 로직 처리 및 “본인 일정 여부” 검증
+    - `Pageable`, `Page` 기반 일정 페이징 조회 제공
+
+- `CommentService`
+    - 댓글 생성 시 로그인 유저/일정 존재 여부 검증 후 저장
+    - 일정 기준 댓글 목록 조회(내림차순 정렬)
+
+### Repository Layer (DB 접근)
+- `UserRepository`, `ScheduleRepository`, `CommentRepository`
+    - Spring Data JPA 기반 CRUD 및 조건 조회 메서드 제공
+    - 페이징 조회는 `Pageable`을 파라미터로 받아 `Page<T>` 형태로 반환
 
 
 ---
@@ -531,13 +780,165 @@
 ---
 
 ## 11. Postman 실행 결과
+
+### 유저 API
 <details>
-<summary>Postman 실행 결과</summary>
+<summary>유저 API</summary>
+<div markdown="1">
+
+### 회원가입, 유저 생성(POST)
+<details>
+<summary>회원가입, 유저 생성(POST)</summary>
 <div markdown="1">
 
 
 </div>
 </details>
+
+### 유저 전체 조회(GET)
+<details>
+<summary>유저 전체 조회(GET)</summary>
+<div markdown="1">
+
+
+</div>
+</details>
+
+### 유저 단건 조회(GET)
+<details>
+<summary>유저 단건 조회(GET)</summary>
+<div markdown="1">
+
+
+</div>
+</details>
+
+### 유저 수정(PATCH)
+<details>
+<summary>유저 수정(PATCH)</summary>
+<div markdown="1">
+
+
+</div>
+</details>
+
+### 유저 삭제(DELETE)
+<details>
+<summary>유저 삭제(DELETE)</summary>
+<div markdown="1">
+
+
+</div>
+</details>
+
+
+</div>
+</details>
+
+---
+
+### 일정 API
+<details>
+<summary>일정 API</summary>
+<div markdown="1">
+
+
+### 일정 생성(POST)
+<details>
+<summary>일정 생성(POST)</summary>
+<div markdown="1">
+dfdfd
+
+</div>
+</details>
+
+### 일정 전체 조회(GET)
+<details>
+<summary>일정 전체 조회(GET)</summary>
+<div markdown="1">
+
+
+</div>
+</details>
+
+### 일정 단건 조회(GET)
+<details>
+<summary>일정 단건 조회(GET)</summary>
+<div markdown="1">
+
+
+</div>
+</details>
+
+### 일정 수정(PATCH)
+<details>
+<summary>일정 수정(PATCH)</summary>
+<div markdown="1">
+
+
+</div>
+</details>
+
+### 일정 삭제(DELETE)
+<details>
+<summary>일정 삭제(DELETE)</summary>
+<div markdown="1">
+
+
+</div>
+</details>
+
+
+</div>
+</details>
+
+---
+
+### 댓글 API
+<details>
+<summary>댓글 API</summary>
+<div markdown="1">
+
+### 댓글 생성(POST)
+<details>
+<summary>댓글 생성(POST)</summary>
+<div markdown="1">
+
+</div>
+</details>
+
+### 댓글 전체 조회(GET)
+<details>
+<summary>댓글 전체 조회(GET)</summary>
+<div markdown="1">
+
+</div>
+</details>
+
+
+</div>
+</details>
+
+---
+
+### 로그인
+<details>
+<summary>로그인</summary>
+<div markdown="1">
+
+</div>
+</details>
+
+---
+
+### 일정 페이징 조회(GET)
+<details>
+<summary>일정 페이징 조회(GET)</summary>
+<div markdown="1">
+
+</div>
+</details>
+
 
 ---
 
@@ -587,3 +988,14 @@
 ![img.png](images/erd/CH3%20숙련%20Spring%20일정관리앱%20(1).png)
 
 ---
+
+## 13. 3 Layer Architecture & Annotation 정리
+https://velog.io/@dlql6717/TIL-3-Layer-Architecture-Spring-요청-어노테이션-정리
+
+
+---
+
+## 14. 트러블슈팅 TIL
+https://velog.io/@dlql6717/TIL-CH-CH3-일정-관리-앱-만들기-트러블슈팅
+
+
