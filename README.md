@@ -894,6 +894,7 @@ ScheduleManagementSystem
 ![user_update_400.png](images/postman/user_update_400.png)
 
 `401 Unauthorized`
+![user_update_401.png](images/postman/user_update_401.png)
 
 `403 Forbidden`
 ![user_update_403.png](images/postman/user_update_403.png)
@@ -919,6 +920,7 @@ ScheduleManagementSystem
 
 ### Fail
 `401 Unauthorized`
+![user_del_401.png](images/postman/user_del_401.png)
 
 `403 Forbidden`
 ![user_del_403.png](images/postman/user_del_403.png)
@@ -959,6 +961,7 @@ ScheduleManagementSystem
 ![schedule_create_400.png](images/postman/schedule_create_400.png)
 
 `401 Unauthorized`
+![schedule_create_401.png](images/postman/schedule_create_401.png)
 
 `403 Forbidden`
 ![schedule_create_403.png](images/postman/schedule_create_403.png)
@@ -1021,7 +1024,7 @@ ScheduleManagementSystem
 ![schedule_update_400.png](images/postman/schedule_update_400.png)
 
 `401 Unauthorized`
-
+![schedule_create_401.png](images/postman/schedule_create_401.png)
 
 `403 Forbidden`
 ![schedule_update_403.png](images/postman/schedule_update_403.png)
@@ -1047,7 +1050,7 @@ ScheduleManagementSystem
 ### Fail
 
 `401 Unauthorized`
-
+![schedule_del_401.png](images/postman/schedule_del_401.png)
 
 `403 Forbidden`
 ![schedule_del_403.png](images/postman/schedule_del_403.png)
@@ -1083,10 +1086,10 @@ ScheduleManagementSystem
 
 ### Fail
 `400 Bad Request`
-⚠️ content: 사이즈 설정을 안 했더니, 공백이어도 댓글 생성되는 문제
+![comment_create_400.png](images/postman/comment_create_400.png)
 
 `401 Unauthorized`
-
+![comment_create_401.png](images/postman/comment_create_401.png)
 
 `404 Not Found`
 ![comment_create_404.png](images/postman/comment_create_404.png)

@@ -6,6 +6,7 @@ import com.example.schedulemanagementsystem.comment.dto.GetCommentResponse;
 import com.example.schedulemanagementsystem.comment.service.CommentService;
 import com.example.schedulemanagementsystem.common.exception.UnauthorizedException;
 import com.example.schedulemanagementsystem.user.dto.SessionUser;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class CommentController {
     @PostMapping("/schedules/{scheduleId}/comments")
     public ResponseEntity<CreateCommentResponse> saveComment(
             @PathVariable Long scheduleId,
-            @RequestBody CreateCommentRequest request,
+            @Valid @RequestBody CreateCommentRequest request,
             @SessionAttribute(name = SESSION_KEY, required = false) SessionUser loginUser
     ){
         requireLogin(loginUser);
