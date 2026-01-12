@@ -13,6 +13,8 @@
 10. API 명세서
 11. Postman 실행 결과
 12. ERD
+13. 3 Layer Architecture & Annotation 정리
+14. 트러블슈팅 TIL
 
 ---
 
@@ -109,6 +111,10 @@ Spring Boot 기반의 **일정 관리 API**를 구현한 프로젝트입니다.
 
 ## 6. 📂 클래스 구조
 
+<details>
+<summary>열기</summary>
+<div markdown="1">
+
 ```
 ScheduleManagementSystem
  ├─ README.md 
@@ -190,6 +196,9 @@ ScheduleManagementSystem
                    └─ service 
                        └─ CommentService
 ```
+
+</div>
+</details>
 
 ---
 
@@ -781,6 +790,33 @@ ScheduleManagementSystem
 
 ## 11. Postman 실행 결과
 
+### 로그인
+<details>
+<summary>로그인</summary>
+<div markdown="1">
+
+### Success
+`200 OK`
+![login_200.png](images/postman/login_200.png)
+
+### Fail
+`400 Bad Request`
+![login_400.png](images/postman/login_400.png)
+
+`403 Forbidden`
+![login_403.png](images/postman/login_403.png)
+
+`404 Not Found`
+![login_404.png](images/postman/login_404.png)
+
+`500 Internal Server Error`
+![login_500.png](images/postman/login_500.png)
+
+</div>
+</details>
+
+---
+
 ### 유저 API
 <details>
 <summary>유저 API</summary>
@@ -791,6 +827,20 @@ ScheduleManagementSystem
 <summary>회원가입, 유저 생성(POST)</summary>
 <div markdown="1">
 
+### Success
+`201 Created`
+![img.png](images/postman/user_signup_201.png)
+![login_session.png](images/postman/login_session.png)
+
+### Fail
+`400 Bad Request`
+![user_signup_400.png](images/postman/user_signup_400.png)
+
+`409 Conflict`
+![user_signup_409.png](images/postman/user_signup_409.png)
+
+`500 Internal Server Error`
+![user_signup_500.png](images/postman/user_signup_500.png)
 
 </div>
 </details>
@@ -800,6 +850,13 @@ ScheduleManagementSystem
 <summary>유저 전체 조회(GET)</summary>
 <div markdown="1">
 
+### Success
+`200 OK`
+![user_getAll_200.png](images/postman/user_getAll_200.png)
+
+### Fail
+`500 Internal Server Error`
+![user_getAll_500.png](images/postman/user_getAll_500.png)
 
 </div>
 </details>
@@ -809,6 +866,16 @@ ScheduleManagementSystem
 <summary>유저 단건 조회(GET)</summary>
 <div markdown="1">
 
+### Success
+`200 OK`
+![login_200.png](images/postman/login_200.png)
+
+### Fail
+`404 Not Found`
+![user_getOne_404.png](images/postman/user_getOne_404.png)
+
+`500 Internal Server Error`
+![user_getOne_500.png](images/postman/user_getOne_500.png)
 
 </div>
 </details>
@@ -818,6 +885,25 @@ ScheduleManagementSystem
 <summary>유저 수정(PATCH)</summary>
 <div markdown="1">
 
+### Success
+`200 OK`
+![user_update_200.png](images/postman/user_update_200.png)
+
+### Fail
+`400 Bad Request`
+![user_update_400.png](images/postman/user_update_400.png)
+
+`401 Unauthorized`
+
+`403 Forbidden`
+![user_update_403.png](images/postman/user_update_403.png)
+
+`404 Not Found`
+⚠️ 수정 필요
+- 유저 수정 시, userId가 존재하지 않음에도 본인 외 userId라면 무조건 403 "본인만 수정할 수 있습니다." 출력
+
+`500 Internal Server Error`
+![user_update_500.png](images/postman/user_update_500.png)\
 
 </div>
 </details>
@@ -827,6 +913,22 @@ ScheduleManagementSystem
 <summary>유저 삭제(DELETE)</summary>
 <div markdown="1">
 
+### Success
+`204 No Content`
+![user_del_204.png](images/postman/user_del_204.png)
+
+### Fail
+`401 Unauthorized`
+
+`403 Forbidden`
+![user_del_403.png](images/postman/user_del_403.png)
+
+`404 Not Found`
+⚠️ 수정 필요
+- 유저 삭제 시, userId가 존재하지 않음에도 본인 외 userId라면 무조건 403 "본인만 삭제할 수 있습니다." 출력
+
+`500 Internal Server Error`
+![user_del_500.png](images/postman/user_del_500.png)
 
 </div>
 </details>
@@ -847,7 +949,25 @@ ScheduleManagementSystem
 <details>
 <summary>일정 생성(POST)</summary>
 <div markdown="1">
-dfdfd
+
+### Success
+`201 Created`
+![schedule_create_201.png](images/postman/schedule_create_201.png)
+
+### Fail
+`400 Bad Request`
+![schedule_create_400.png](images/postman/schedule_create_400.png)
+
+`401 Unauthorized`
+
+`403 Forbidden`
+![schedule_create_403.png](images/postman/schedule_create_403.png)
+
+`404 Not Found`
+![schedule_create_404.png](images/postman/schedule_create_404.png)
+
+`500 Internal Server Error`
+![schedule_create_500.png](images/postman/schedule_create_500.png)
 
 </div>
 </details>
@@ -857,6 +977,13 @@ dfdfd
 <summary>일정 전체 조회(GET)</summary>
 <div markdown="1">
 
+### Success
+`200 OK`
+
+### Fail
+`404 Not Found`
+
+`500 Internal Server Error`
 
 </div>
 </details>
@@ -866,15 +993,44 @@ dfdfd
 <summary>일정 단건 조회(GET)</summary>
 <div markdown="1">
 
+### Success
+`200 OK`
+![schedule_getAll_200.png](images/postman/schedule_getAll_200.png)
+
+### Fail
+`404 Not Found`
+![schedule_getAll_404.png](images/postman/schedule_getAll_404.png)
+
+`500 Internal Server Error`
+![schedule_getAll_500.png](images/postman/schedule_getAll_500.png)
 
 </div>
 </details>
 
-### 일정 수정(PATCH)
+### 일정 수정(PUT)
 <details>
-<summary>일정 수정(PATCH)</summary>
+<summary>일정 수정(PUT)</summary>
 <div markdown="1">
 
+### Success
+`200 OK`
+![schedule_update_200.png](images/postman/schedule_update_200.png)
+
+### Fail
+`400 Bad Request`
+![schedule_update_400.png](images/postman/schedule_update_400.png)
+
+`401 Unauthorized`
+
+
+`403 Forbidden`
+![schedule_update_403.png](images/postman/schedule_update_403.png)
+
+`404 Not Found`
+![schedule_update_404.png](images/postman/schedule_update_404.png)
+
+`500 Internal Server Error`
+![schedule_update_500.png](images/postman/schedule_update_500.png)
 
 </div>
 </details>
@@ -884,6 +1040,23 @@ dfdfd
 <summary>일정 삭제(DELETE)</summary>
 <div markdown="1">
 
+### Success
+`204 No Content`
+![schedule_del-204.png](images/postman/schedule_del_204.png)
+
+### Fail
+
+`401 Unauthorized`
+
+
+`403 Forbidden`
+![schedule_del_403.png](images/postman/schedule_del_403.png)
+
+`404 Not Found`
+![schedule_del_404.png](images/postman/schedule_del_404.png)
+
+`500 Internal Server Error`
+![schedule_del_500.png](images/postman/schedule_del_500.png)
 
 </div>
 </details>
@@ -904,6 +1077,23 @@ dfdfd
 <summary>댓글 생성(POST)</summary>
 <div markdown="1">
 
+### Success
+`201 Created`
+![comment_create_201.png](images/postman/comment_create_201.png)
+
+### Fail
+`400 Bad Request`
+⚠️ content: 사이즈 설정을 안 했더니, 공백이어도 댓글 생성되는 문제
+
+`401 Unauthorized`
+
+
+`404 Not Found`
+![comment_create_404.png](images/postman/comment_create_404.png)
+
+`500 Internal Server Error`
+![comment_create_500.png](images/postman/comment_create_500.png)
+
 </div>
 </details>
 
@@ -915,29 +1105,17 @@ dfdfd
 </div>
 </details>
 
+### Success
+`200 OK`
+![comment_getAll_200.png](images/postman/comment_getAll_200.png)
+
+### Fail
+`500 Internal Server Error`
+![comment_getAll_500.png](images/postman/comment_getAll_500.png)
 
 </div>
 </details>
 
----
-
-### 로그인
-<details>
-<summary>로그인</summary>
-<div markdown="1">
-
-</div>
-</details>
-
----
-
-### 일정 페이징 조회(GET)
-<details>
-<summary>일정 페이징 조회(GET)</summary>
-<div markdown="1">
-
-</div>
-</details>
 
 
 ---
